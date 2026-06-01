@@ -15,11 +15,14 @@ class Body:
 
         self.positions = []
 
-    def update(self, force, dt):
-        acceleration = force / self.mass
-        self.velocity += acceleration * dt
+    def kick_drift(self, force, dt):
+        acc = force/self.mass
+        self.velocity += 1/2 * acc * dt
         self.position += self.velocity * dt
         self.positions.append(self.position.copy())
+    def kick(self, force, dt):
+        acc = force/self.mass
+        self.velocity += 1/2 * acc * dt
 
 sun = Body(
     mass=1.989e30,
@@ -33,19 +36,28 @@ earth = Body(
     velocity=[0, 29780]   
 )
 
-
+def gravity(G, m1, m2, r, r_hat):
+    return G*m1*m2 * r_hat/r**2
 
 dt = DAY
 steps = 365
 
+r_vec = sun.position - earth.position
+r = np.linalg.norm(r_vec)
+r_hat = r_vec / r
+force = gravity(G, sun.mass, earth.mass, r, r_hat)
 for _ in range(steps):
+    earth.kick_drift(force, dt)
+    sun.kick_drift(-force, dt)
+
     r_vec = sun.position - earth.position
     r = np.linalg.norm(r_vec)
     r_hat = r_vec / r
-    force_mag = G * sun.mass * earth.mass / r**2
-    force = force_mag * r_hat
-    earth.update(force, dt)
-    sun.update(-force, dt)
+    new_force = gravity(G, sun.mass, earth.mass, r, r_hat)
+
+    earth.kick(new_force, dt)
+    sun.kick(-new_force, dt)
+    force = new_force
 
 
 
