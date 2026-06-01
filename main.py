@@ -24,17 +24,22 @@ class Body:
         acc = force/self.mass
         self.velocity += 1/2 * acc * dt
 
-sun = Body(
-    mass=1.989e30,
-    position=[0, 0],
-    velocity=[0, 0]
-)
+def get_bodies():
+    sun = Body(
+        mass=1.989e30,
+        position=[0, 0],
+        velocity=[0, 0]
+    )
 
-earth = Body(
-    mass=5.972e24,
-    position=[AU, 0],
-    velocity=[0, 29780]   
-)
+    earth = Body(
+        mass=5.972e24,
+        position=[AU, 0],
+        velocity=[0, 29780]   
+    )
+    
+    return sun,earth
+
+
 
 def gravity(G, m1, m2, r, r_hat):
     return G*m1*m2 * r_hat/r**2
@@ -42,42 +47,48 @@ def gravity(G, m1, m2, r, r_hat):
 dt = DAY
 steps = 365
 
-r_vec = sun.position - earth.position
-r = np.linalg.norm(r_vec)
-r_hat = r_vec / r
-force = gravity(G, sun.mass, earth.mass, r, r_hat)
-for _ in range(steps):
-    earth.kick_drift(force, dt)
-    sun.kick_drift(-force, dt)
-
+def run_sim(G, sun, earth, gravity, dt, steps):
     r_vec = sun.position - earth.position
     r = np.linalg.norm(r_vec)
     r_hat = r_vec / r
-    new_force = gravity(G, sun.mass, earth.mass, r, r_hat)
+    force = gravity(G, sun.mass, earth.mass, r, r_hat)
+    for _ in range(steps):
+        earth.kick_drift(force, dt)
+        sun.kick_drift(-force, dt)
 
-    earth.kick(new_force, dt)
-    sun.kick(-new_force, dt)
-    force = new_force
+        r_vec = sun.position - earth.position
+        r = np.linalg.norm(r_vec)
+        r_hat = r_vec / r
+        new_force = gravity(G, sun.mass, earth.mass, r, r_hat)
+
+        earth.kick(new_force, dt)
+        sun.kick(-new_force, dt)
+        force = new_force
 
 
+def plot_orbit(sun, earth):
+    earth_positions = np.array(earth.positions)
+    sun_positions = np.array(sun.positions)
 
-earth_positions = np.array(earth.positions)
-sun_positions = np.array(sun.positions)
+    plt.figure(figsize=(8, 8))
+    plt.plot(
+        earth_positions[:, 0],
+        earth_positions[:, 1],
+        label="Earth"
+    )
+    plt.plot(
+        sun_positions[:, 0],
+        sun_positions[:, 1],
+        label="Sun"
+    )
+    plt.scatter(0, 0, s=200, label="Initial Sun Position", color="orange")
+    plt.xlabel("x position (m)")
+    plt.ylabel("y position (m)")
+    plt.axis("equal")
+    plt.legend()
+    plt.show()
 
-plt.figure(figsize=(8, 8))
-plt.plot(
-    earth_positions[:, 0],
-    earth_positions[:, 1],
-    label="Earth"
-)
-plt.plot(
-    sun_positions[:, 0],
-    sun_positions[:, 1],
-    label="Sun"
-)
-plt.scatter(0, 0, s=200, label="Initial Sun Position", color="orange")
-plt.xlabel("x position (m)")
-plt.ylabel("y position (m)")
-plt.axis("equal")
-plt.legend()
-plt.show()
+if __name__ == "__main__":
+    sun, earth = get_bodies()
+    run_sim(G, sun, earth, gravity, dt, 365)
+    plot_orbit(sun, earth)
