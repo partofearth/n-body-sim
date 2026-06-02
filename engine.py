@@ -72,11 +72,12 @@ def gravity(m1, m2, r, r_hat):
 dt = DAY
 steps = 365
 
-def run_sim(bodies, dt, steps):
-    for _ in range(steps):
+def physics_generator(bodies, dt):
+    while True:
         accs = get_accs(bodies)
         for b in bodies:
             b.kick_drift(accs[b], dt)
         next_accs = get_accs(bodies)
         for b in bodies:
-            b.kick(next_accs[b], dt)
+            b.kick(next_accs[b], dt)         
+        yield bodies
