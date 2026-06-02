@@ -55,7 +55,14 @@ def get_bodies():
         color="blue"
     )
     
-    return sun,earth
+    mars = Body(
+        mass = 6.39e23, 
+        position=[1.524*AU, 0],
+        velocity=[0, 24070],
+        name="Mars",
+        color="red"
+    )
+    return sun,earth,mars
 
 
 

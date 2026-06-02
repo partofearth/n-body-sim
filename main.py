@@ -4,5 +4,5 @@ from visualizer import plot_orbit
 
 if __name__ == "__main__":
     bodies = get_bodies()
-    run_sim(bodies, DAY, 365)
+    run_sim(bodies, DAY, 728)
     plot_orbit(bodies)
