@@ -7,34 +7,52 @@ AU = 1.496e11
 DAY = 86400              
 
 class Body:
-    def __init__(self, mass, position, velocity):
+    def __init__(self, name, mass, position, velocity, color):
+        self.name = name
         self.mass = mass
 
         self.position = np.array(position, dtype=float)
         self.velocity = np.array(velocity, dtype=float)
 
         self.positions = []
+        self.color = color
 
-    def kick_drift(self, force, dt):
-        acc = force/self.mass
+    def kick_drift(self, acc, dt):
         self.velocity += 1/2 * acc * dt
         self.position += self.velocity * dt
         self.positions.append(self.position.copy())
-    def kick(self, force, dt):
-        acc = force/self.mass
+    def kick(self, acc, dt):
         self.velocity += 1/2 * acc * dt
+    
+def get_accs(bodies):
+    accs = {b: np.zeros(2) for b in bodies}
+    for i, b1 in enumerate(bodies):
+        for b2 in bodies[i+1:]:
+            r_vec = b2.position - b1.position
+            dist = np.linalg.norm(r_vec)
+            if dist == 0:
+                continue
+            force = (G * b1.mass * b2.mass / dist**2) * (r_vec / dist)
+            accs[b1] += force / b1.mass
+            accs[b2] -= force / b2.mass
+    return accs
+
 
 def get_bodies():
     sun = Body(
         mass=1.989e30,
         position=[0, 0],
-        velocity=[0, 0]
+        velocity=[0, 0],
+        name="Sun",
+        color="orange"
     )
 
     earth = Body(
         mass=5.972e24,
         position=[AU, 0],
-        velocity=[0, 29780]   
+        velocity=[0, 29780],
+        name="Earth",
+        color="blue"
     )
     
     return sun,earth
@@ -47,16 +65,11 @@ def gravity(m1, m2, r, r_hat):
 dt = DAY
 steps = 365
 
-def run_sim(b1, b2, r_hat, r, force, dt, steps):
+def run_sim(bodies, dt, steps):
     for _ in range(steps):
-        b2.kick_drift(force, dt)
-        b1.kick_drift(-force, dt)
-
-        r_vec = b1.position - b2.position
-        r = np.linalg.norm(r_vec)
-        r_hat = r_vec / r
-        new_force = gravity(b1.mass, b2.mass, r, r_hat)
-
-        b2.kick(new_force, dt)
-        b1.kick(-new_force, dt)
-        force = new_force
+        accs = get_accs(bodies)
+        for b in bodies:
+            b.kick_drift(accs[b], dt)
+        next_accs = get_accs(bodies)
+        for b in bodies:
+            b.kick(next_accs[b], dt)
