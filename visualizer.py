@@ -24,10 +24,8 @@ def animate_orbit(bodies, gen):
             pos = b.position
             pos_array = np.array(b.positions)
             if len(pos_array) > 0:
-                lines[b].set_data(pos_array[:, 0], pos_array[:, 1])
-                lines[b].set_3d_properties(pos_array[:, 2])
-                points[b].set_data([pos[0]], [pos[1]])
-                points[b].set_3d_properties([pos[2]])
+                lines[b].set_data_3d((pos_array[:, 0], pos_array[:, 1], pos_array[:, 2]))
+                points[b].set_data_3d(([pos[0]], [pos[1]], [pos[2]]))
         return list(lines.values()) + list(points.values())
     
 
