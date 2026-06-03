@@ -25,7 +25,7 @@ class Body:
         self.velocity += 1/2 * acc * dt
     
 def get_accs(bodies):
-    accs = {b: np.zeros(2) for b in bodies}
+    accs = {b: np.zeros(3) for b in bodies}
     for i, b1 in enumerate(bodies):
         for b2 in bodies[i+1:]:
             r_vec = b2.position - b1.position
@@ -41,24 +41,24 @@ def get_accs(bodies):
 def get_bodies():
     sun = Body(
         mass=1.989e30,
-        position=[0, 0],
-        velocity=[0, 0],
+        position=[0, 0, 0],
+        velocity=[0, 0, 0],
         name="Sun",
         color="orange"
     )
 
     earth = Body(
         mass=5.972e24,
-        position=[AU, 0],
-        velocity=[0, 29780],
+        position=[AU, 0, 0],
+        velocity=[0, 29780, 0],
         name="Earth",
         color="blue"
     )
     
     mars = Body(
         mass = 6.39e23, 
-        position=[1.524*AU, 0],
-        velocity=[0, 24070],
+        position=[1.524*AU, 0, 0],
+        velocity=[0, 24070, 3000], #z-velocity exaggerated for easier visualization
         name="Mars",
         color="red"
     )
