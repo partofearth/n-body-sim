@@ -32,9 +32,9 @@ def get_accs(bodies):
             dist = np.linalg.norm(r_vec)
             if dist == 0:
                 continue
-            force = (G * b1.mass * b2.mass / dist**2) * (r_vec / dist)
-            accs[b1] += force / b1.mass
-            accs[b2] -= force / b2.mass
+            common_factor = G / (dist ** 3)
+            accs[b1] += r_vec * (b2.mass * common_factor)
+            accs[b2] -= r_vec * (b1.mass * common_factor)
     return accs
 
 
@@ -73,11 +73,11 @@ dt = DAY
 steps = 365
 
 def physics_generator(bodies, dt):
+    accs = get_accs(bodies)
     while True:
-        accs = get_accs(bodies)
         for b in bodies:
             b.kick_drift(accs[b], dt)
-        next_accs = get_accs(bodies)
+        accs = get_accs(bodies)
         for b in bodies:
-            b.kick(next_accs[b], dt)         
+            b.kick(accs[b], dt)         
         yield bodies
