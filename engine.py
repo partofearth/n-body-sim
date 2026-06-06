@@ -7,20 +7,22 @@ AU = 1.496e11
 DAY = 86400              
 
 class Body:
-    def __init__(self, name, mass, position, velocity, color):
+    def __init__(self, name, mass, position, velocity, color, total_steps):
         self.name = name
         self.mass = mass
 
         self.position = np.array(position, dtype=float)
         self.velocity = np.array(velocity, dtype=float)
 
-        self.positions = []
+        self.positions = np.zeros((total_steps, 3))
+        self.step_idx = 0
         self.color = color
 
     def kick_drift(self, acc, dt):
         self.velocity += 1/2 * acc * dt
         self.position += self.velocity * dt
-        self.positions.append(self.position.copy())
+        self.positions[self.step_idx] = self.position.copy()
+        self.step_idx += 1
     def kick(self, acc, dt):
         self.velocity += 1/2 * acc * dt
     
@@ -38,13 +40,14 @@ def get_accs(bodies):
     return accs
 
 
-def get_bodies():
+def get_bodies(total_steps):
     sun = Body(
         mass=1.989e30,
         position=[0, 0, 0],
         velocity=[0, 0, 0],
         name="Sun",
-        color="orange"
+        color="orange",
+        total_steps=total_steps
     )
 
     earth = Body(
@@ -52,7 +55,8 @@ def get_bodies():
         position=[AU, 0, 0],
         velocity=[0, 29780, 0],
         name="Earth",
-        color="blue"
+        color="blue",
+        total_steps=total_steps
     )
     
     mars = Body(
@@ -60,7 +64,8 @@ def get_bodies():
         position=[1.524*AU, 0, 0],
         velocity=[0, 24070, 3000], #z-velocity exaggerated for easier visualization
         name="Mars",
-        color="red"
+        color="red",
+        total_steps=total_steps
     )
     return sun,earth,mars
 
@@ -72,12 +77,11 @@ def gravity(m1, m2, r, r_hat):
 dt = DAY
 steps = 365
 
-def physics_generator(bodies, dt):
+def run_simulation(bodies, steps, dt):
     accs = get_accs(bodies)
-    while True:
+    for _ in range(steps):
         for b in bodies:
             b.kick_drift(accs[b], dt)
         accs = get_accs(bodies)
         for b in bodies:
-            b.kick(accs[b], dt)         
-        yield bodies
+            b.kick(accs[b], dt)
