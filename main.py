@@ -1,8 +1,7 @@
-from engine import get_bodies, run_simulation, DAY
+from engine import simulate_orbits, DAY
 from visualizer import animate_orbit
 
 if __name__ == "__main__":
     steps = 728
-    bodies = get_bodies(steps)
-    run_simulation(bodies, steps, DAY)
-    animate_orbit(bodies, steps)
+    history, metadata = simulate_orbits(steps, DAY)
+    animate_orbit(history, metadata)
